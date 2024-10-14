@@ -8,13 +8,10 @@ len=length(x);
 k=floor(len/NFFT);
 tmp=[];
 y=0;
-window=hamming(NFFT);
-U = sum(window.^2) / NFFT; % facteur de correction
 for i=1:k
     tmp=x(1+(i-1)*NFFT:i*NFFT);
-    tmp=tmp.*transpose(window);
     tmp=fftshift(fft(tmp));
-    tmp=(abs(tmp).^2)/(NFFT*Fe*U);
+    tmp=(abs(tmp).^2)/(NFFT*Fe);
     y=y+tmp;
 end
 y=y/k;
