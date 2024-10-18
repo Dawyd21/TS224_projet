@@ -11,7 +11,7 @@ y=0;
 for i=1:k
     tmp=x(1+(i-1)*NFFT:i*NFFT);
     tmp=fftshift(fft(tmp));
-    tmp=(abs(tmp).^2)/(NFFT*Fe);
+    tmp=(abs(tmp).^2)/(NFFT);
     y=y+tmp;
 end
 y=y/k;

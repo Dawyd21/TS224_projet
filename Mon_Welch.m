@@ -16,7 +16,7 @@ for i=1:k
         tmp=x(1+(i-1)*ptr:(i-1)*ptr+NFFT);
         tmp=tmp.*transpose(window);
         tmp=fftshift(fft(tmp));
-        tmp=(abs(tmp).^2)/(NFFT*Fe*U);
+        tmp=(abs(tmp).^2)/(NFFT*U);
         y=y+tmp;
     end
 end
