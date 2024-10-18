@@ -8,6 +8,7 @@ n=10000;
 Fe=8000;
 time_axis=0:1/Fe:(1/Fe)*n-1/Fe;
 freq_axis=-Fe*n+Fe:Fe:Fe*n-Fe;
+m=2; % parametre pour le lissage de daniell
 
 %% 2.2 - Préambule
 
@@ -30,17 +31,26 @@ figure,plot(freq_axis,c_unbiased)
 title("fonction autocorrelation non biaisée");
 
 % Calcul du spectre de puissance
-DSP_bruit = fftshift(abs(fft(c_biased, 2*n))); % avec le theoreme de wiener-khintchine 
-DPS_bruit=Mon_Welch(bruit,n/100,Fe,n/100-1);% avec periodogramme welsh
+DSP_bruit_WK = fftshift(abs(fft(c_biased, 2*n))); % avec le theoreme de wiener-khintchine 
+DPS_bruit_Welsh= Mon_Welch(bruit,n/100,Fe,n/100-1);% avec periodogramme welsh
+DPS_bruit_Barlett= Mon_Barlett(bruit ,n/100,Fe);
+DPS_bruit_Daniell= Mon_Daniell(DPS_bruit_Welsh,m);
 
-figure,semilogy(DPS_bruit)
+freq_axis_periodo=linspace(-Fe/2,Fe/2,length(DPS_bruit_Welsh));
+figure,hold on
+plot(freq_axis_periodo,DPS_bruit_Welsh,LineWidth=2);
+plot(freq_axis_periodo,DPS_bruit_Barlett,LineWidth=2);
+plot(freq_axis_periodo,DPS_bruit_Daniell,LineWidth=2);
+plot(freq_axis_periodo,(variance^2)*ones(1,length(DPS_bruit_Welsh)));
 title("DPS du bruit")
+legend('Periodogramme de Welsh','Periodogramme de Barlett','Periodogramme de Daniell');
 
+% changement de la taille de l'axe de freq
 freq_axis=-Fe*n+Fe:Fe:Fe*n;
 figure,hold on
-plot(freq_axis,DSP_bruit)
-plot(freq_axis,ones(1,length(DSP_bruit))*variance^2,Color="red")
+plot(freq_axis,DSP_bruit_WK)
+plot(freq_axis,ones(1,length(DSP_bruit_WK))*variance^2,Color="red")
 title("Comparaison entre la dsp theorique et pratique")
-legend('pratique','theorique')
+legend('DSP avec WK','theorique')
 
 

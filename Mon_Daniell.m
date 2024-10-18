@@ -1,13 +1,17 @@
-function [y, f] = Mon_Daniell(x, Nfft, Fe)
-    X = fft(x, Nfft);
-    Px = abs(X).^2 / Nfft;
-    L = 5; 
-    window = ones(1, L)/L; 
+function [x] = Mon_Daniell(x, m)
+% x est le periodogramme a lissé
+% m est le parametre tel qu'on considere les valeurs entre t-m et t+m
+% inclus, on note nbr le nombre de valeurs considere
+len=length(x);
+nbr=2*m+1;
+for i=1:len
+    if i-m>1 && i+m<len
+        tmp=x(i);
+        for k=1:m
+            tmp=tmp+x(i-k)+x(i+k);
+        end
+        x(i)=tmp/nbr;
+    end  
+end
 
-    Px_lisse = conv(Px, window, 'same'); 
-
-    f = (0:(Nfft-1)) * (Fe/Nfft);
-    f = f - Fe/2;
-
-    y = fftshift(Px_lisse);
 end
