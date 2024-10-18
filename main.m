@@ -31,7 +31,7 @@ title("fonction autocorrelation non biaisée");
 
 % Calcul du spectre de puissance
 DSP_bruit = fftshift(abs(fft(c_biased, 2*n))); % avec le theoreme de wiener-khintchine 
-DPS_bruit=Mon_Welch(bruit,n/100,Fe);% avec periodogramme welsh
+DPS_bruit=Mon_Welch(bruit,n/100,Fe,n/100-1);% avec periodogramme welsh
 
 figure,semilogy(DPS_bruit)
 title("DPS du bruit")
