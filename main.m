@@ -9,7 +9,7 @@ Fe=8000;
 time_axis=0:1/Fe:(1/Fe)*n-1/Fe;
 freq_axis=-Fe*n+Fe:Fe:Fe*n-Fe;
 
-%% 2.2
+%% 2.2 - Préambule
 
 variance=3; % sigma
 bruit = variance*randn(1,n);
