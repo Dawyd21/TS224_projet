@@ -1,9 +1,15 @@
 %% Projet TS224
+% Ce script génère un bruit blanc gaussien, calcule et compare ses
+% autocorrélations (théorique, biaisée, et non biaisée) et analyse son
+% spectre de puissance à l'aide de la transformée de Fourier et de la
+% méthode de Welch.
+
 %% Initialisation
 clc
 clear
 close all
-%% Constantes
+
+%% Parametre
 load fcno03fz.mat
 load data_Weierstrass.mat
 n=length(fcno03fz);
@@ -14,14 +20,19 @@ m=2; % parametre pour le lissage de daniell
 
 % RSB definition a=sqrt(P_signal/P_bruit*10**(-RSB/10))
 
+
 %% 2.2 - Préambule
 
-variance=3; % sigma
-bruit = variance*randn(1,n);
+% Paramètres du bruit
+variance = 3; % Variance (sigma^2)
+bruit = variance * randn(1, n);  % Génération du bruit blanc gaussien centré
 
-% Fonction d'autocorrelation theorique
-R_bruit=cat(2,zeros(1,n-1),ones(1,1));
-R_bruit=cat(2,R_bruit,zeros(1,n-1))*variance^2;
+% Fonction d'autocorrélation théorique
+% Pour un bruit blanc, l'autocorrélation est nulle sauf à l'origine où elle
+% vaut la variance (ici, 3^2 = 9).
+R_bruit = cat(2, zeros(1, n - 1), ones(1, 1));
+R_bruit = cat(2, R_bruit, zeros(1, n - 1)) * variance^2;
+
 
 % Calcul de la fonction d'autocorrélation
 [c_biased, lags] = xcorr(bruit,'biased');
@@ -34,7 +45,34 @@ title("Fonction autocorrelation biaisée");
 [c_unbiased, lags] = xcorr(bruit,'unbiased');
 figure,plot(freq_axis,c_unbiased)
 
-title("fonction autocorrelation non biaisée");
+% Affichage de l'autocorrélation théorique
+figure;
+stem(-n + 1:n - 1, R_bruit); % Utilisation de stem pour mieux visualiser le pic
+title('Autocorrélation théorique du bruit blanc');
+xlabel('Décalage');
+ylabel('Autocorrélation');
+grid on;
+
+% Calcul de la fonction d'autocorrélation estimée (biaisée et non biaisée)
+[c_biased, lags] = xcorr(bruit, 'biased');
+[c_unbiased, lags] = xcorr(bruit, 'unbiased');
+
+% Affichage des autocorrélations estimées
+figure;
+plot(lags, c_biased);
+title('Fonction autocorrélation biaisée');
+xlabel('Décalage');
+ylabel('Autocorrélation');
+grid on;
+
+
+figure;
+plot(lags, c_unbiased);
+title('Fonction autocorrélation non biaisée');
+xlabel('Décalage');
+ylabel('Autocorrélation');
+grid on;
+
 
 % Calcul du spectre de puissance
 DSP_bruit_WK = fftshift(abs(fft(c_biased))); % avec le theoreme de wiener-khintchine 
@@ -176,4 +214,43 @@ disp("H est egale a")
 disp(alpha(2,1)-1)
 
 
+% Analyse des résultats :
+% On observe que l'autocorrélation théorique a un pic à l'origine (décalage
+% zéro) égal à la variance et est nulle ailleurs. L'autocorrélation biaisée
+% et non biaisée diffèrent par la manière dont elles traitent les valeurs
+% proches des bords (le biais augmente lorsque le décalage augmente).
 
+% Calcul du spectre de puissance à l'aide de la transformée de Fourier
+% (avec le théorème de Wiener-Khinchine)
+DSP_bruit = fftshift(abs(fft(c_biased, 2 * n))); 
+
+% Calcul de la DSP avec la méthode de Welch
+DPS_bruit = Mon_Welch(bruit, n / 100, Fe); % Assurez-vous que la fonction Mon_Welch est correcte
+
+
+% Affichage des spectres de puissance
+figure;
+semilogy(DPS_bruit);
+title('DPS du bruit (méthode de Welch)');
+xlabel('Fréquence (Hz)');
+ylabel('DPS');
+grid on;
+
+% Comparaison entre la DSP théorique (constante) et celle obtenue
+freq_axis = -Fe * n + Fe : Fe : Fe * n;
+figure;
+hold on;
+plot(freq_axis, DSP_bruit);
+plot(freq_axis, ones(1, length(DSP_bruit)) * variance^2, 'r', 'LineWidth', 2);
+title('Comparaison entre la DSP théorique et pratique');
+xlabel('Fréquence (Hz)');
+ylabel('DPS');
+legend('Pratique', 'Théorique');
+grid on;
+
+% Analyse des résultats :
+% La densité spectrale de puissance théorique pour un bruit blanc est
+% constante et égale à la variance (ici, 9). La DSP obtenue à partir de la
+% transformée de Fourier et celle obtenue par la méthode de Welch devraient
+% approcher cette valeur. Les écarts peuvent être dus à la nature aléatoire
+% du bruit et à la taille finie de l'échantillon.
